@@ -24,6 +24,9 @@ class Kmeans(seedsSet: Set[Seed],
 
   import Kmeans._
 
+  //set end of algo check function during init
+  setCheckFunction()
+
   //iteration counter
   private val counter = new AtomicInteger()
 
@@ -34,8 +37,6 @@ class Kmeans(seedsSet: Set[Seed],
 
   // root call for K-Means
   def process(implicit executionContext: ExecutionContext): Future[Set[Cluster]] = {
-
-    setCheckFunction()
 
     val clusters: Set[Cluster] =
       clusterSettings.initClusterWithCentroidOption match{
@@ -82,7 +83,7 @@ class Kmeans(seedsSet: Set[Seed],
 
     for{
       //remember the hashcodes to compare them later
-      origHashCodes  <- Future(lCluster.map(_.hashCode()))
+      origHashCodes  <- Future.successful(lCluster.map(_.hashCode()))
 
       // clear seeds in cluster and create a copy
       allSeeds       <- Future(lCluster.flatMap(_.clear).toBuffer)
@@ -91,7 +92,7 @@ class Kmeans(seedsSet: Set[Seed],
       result         <- addSeedsToClosestClusters(allSeeds,lCluster)
 
       //get hashcodes after adding seeds
-      afterMvCodes   <- Future(result.map(_.hashCode()))
+      afterMvCodes   <- Future.successful(result.map(_.hashCode()))
 
       // return false if a cluster changed
       clusterChanged <- Future(!origHashCodes.iterator.sameElements(afterMvCodes.iterator))
